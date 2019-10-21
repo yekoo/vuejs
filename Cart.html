@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TT</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <style>
+            body{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            .counter{
+                display:inline-block;
+                width:130px;
+                margin:auto;
+            }
+            .counterBtn{
+                display:inline-block;
+                width:24px;
+                height:24px;
+                border-radius: 12px;
+                background:white;
+                border:2px solid black;
+                margin:0;
+                text-align:center;
+                font-size:20px;
+                cursor:pointer;
+            }
+            .counterInp{
+                box-sizing: border-box;
+                width:35px;
+                height:26px;
+                margin:0 3px;
+                font-size:20px;
+                border:2px solid black;
+                text-align:center;
+            }
+
+
+            .cart{
+                margin:0 40px;
+                border:1px solid #ccc;
+                max-width:800px;
+                padding:2px;
+                position:relative;
+            }
+            .cartItem{
+                margin:3px;
+                padding:5px;
+                display:flex;
+            }
+            .prodPic{
+                max-width:40px;
+            }
+            .prodCel{
+                padding:5px;
+            }
+            .prodCell05x{
+                width:50%;
+            }
+            .prodCellName{
+                width:100%;
+            }
+            .prodCell100{
+                width:100px;
+            }
+            .prodCell50{
+                width:50px;
+            }
+            .prodCellCounter{
+                width: 120px;
+            }
+            .prodCellCash{
+                width: 100px;
+                min-width: 90px;
+                font-weight: bold;
+                text-align:right;
+            }
+
+            .delivery{
+                border-radius: 10px;
+                padding:12px;
+            }
+            .deliveryFree{
+                background:#afc;
+            }
+            .deliveryPaid{
+                background: #fca;
+            }
+            .divButton{
+                padding:5px;
+                border:1px solid grey;
+                background:white;
+                border-radius: 4px;
+                width:240px;
+                text-align:center;
+                cursor:pointer;
+            }
+            .orderButton{
+                border:0;
+                background:green;
+                color:white;
+                width:240px;
+                position: relative;
+                right: 0;
+                display:inline-block;
+            }
+            .deleteButton{
+                width:auto;
+                padding:3px 7px;
+                border:1px solid red;
+                background:white;
+                border-radius: 4px;
+                color:red;
+            }
+            .finalCosts{
+                text-align:right;
+                position:relative;
+                right:0;
+            }
+            .finalCosts b{
+                width:70px;
+                display:inline-block;
+                padding:3px;
+            }
+            .orderCost{
+                font-size: 120%;
+            }
+            s{
+                color:#ccc;
+            }
+        </style>
+    </head>
+    <body>
+            <div id="cartTT">
+                    
+                    <Cart>
+                        
+                    </Cart>
+                    
+            </div>
+
+
+
+
+
+
+            <script>
+                Vue.component('Cart', {
+                    props:{
+                        
+                    },
+                    model:{
+                        contents:{},
+                        total:0,
+                        freeDeliveryCost:6000,
+                    },
+                    data:function(){
+                        return {
+                            total:0,
+                            freeDeliveryCost:6000
+                        }
+                    },
+                    methods:{
+                        sumAll:function(e){
+                            this.total = 0;
+                            for(let itm in this.$children)
+                                this.total += this.$children[itm].sum;
+                            this.total = this.sum;
+                        },
+                        overflow:function(){
+                            alert("Превышено максимальное число товаров в одной позиции");
+                        },
+                        deleteItem:function(e){
+                        }
+                    },
+                    computed:{
+                        freeDeliveryCostLeft:function(){
+                            return this.freeDeliveryCost-this.total;
+                        },
+                        totalCost:function(){
+                            let sum;
+                            this.total = 0;
+                            for(let itm in this.$children)
+                                this.total += this.$children[itm].sum;
+                            return this.total;
+                        },
+                        deliveryCost:function(){
+                            if(this.total<this.freeDeliveryCost)
+                                return 450;
+                            else
+                                return 0;
+                        }
+                    },
+                    template:`
+                        <div class="cart">
+                            <h3>Корзина</h3>
+                            <div class="delivery deliveryPaid" v-if="this.total<this.freeDeliveryCost">
+                                До бесплатной доставки осталось <b> {{freeDeliveryCostLeft}}&#x20bd; </b>
+                                
+                            </div>
+                            <div class="delivery deliveryFree" v-else>
+                                    Ура! Вам бесплатная доставка
+                            </div>
+
+                            <Cartitem v-for="(item, key) in this.$root.$data.cartcontents" 
+                                :picsrc="item.pic" 
+                                :name="item.name" 
+                                :cost="item.cost"
+                                :count="item.count"
+                                :key="key"
+                                @sum-calculated="sumAll"
+                                @quantity-overcount="overflow"
+                                @delete-this-product="deleteItem"
+                            ></Cartitem>
+                            <div class="divButton">Добавить товар в корзину</div>
+
+                            <div class="finalCosts">
+                                Стоимость доставки <b> {{ this.deliveryCost }}&#x20bd;</b><br/>
+                                Итого <b><span class="orderCost"> {{ totalCost+deliveryCost }}&#x20bd; </span></b><br/><br/>
+                                <div class="divButton orderButton">Оформить заказ</div>
+                            </div>
+
+                        </div>
+                    `
+                });
+
+                Vue.component('Cartitem', {
+                    props:{
+                        name:String,
+                        cost:Number,
+                        picsrc:String,
+                        count:Number,
+                    },
+                    model:{
+                        name:"abc",
+                        cost:0,
+                        sum:0,
+                        picSrc:"",
+                        count:0,
+                        sum:0
+                    },
+                    data:function(){
+                        return {
+                            sum:0
+                        }
+                    },
+                    methods:{
+                        calcCost:function(e){
+                            this.sum = +e * +this.cost;
+                            this.$emit("sum-calculated", this.sum);
+                        },
+                        deleteThisProduct:function(e){
+                            this.$emit("delete-product", this);
+                        }
+                    },
+                    template:`
+                        <div class="cartItem">
+                            <div class="prodCel prodCell50">
+                                <img v-bind:src="this.picsrc" class="prodPic"/>
+                            </div>
+                            <div class="prodCel prodCellName">
+                                {{this.name}}
+                            </div>
+                            <div class="prodCel prodCell100 prodCellCash">
+                                {{this.cost}}&#x20bd;&nbsp;&#215;
+                            </div>
+                            <div class="prodCel prodCellCounter">
+                                <counter z-bind:count="this.count"  @count-changed="calcCost" @overcount="$emit('quantity-overcount')"/>
+                            </div>
+                            <div class="prodCel prodCell100 prodCellCash">
+                                    {{this.sum}}&#x20bd;
+                            </div>
+                            <div class="prodCel prodCell100">
+                                <div class="divButton deleteButton" @click="$emit('delete-this-product', this.$index)">Удалить</div>
+                            </div>
+                        </div>
+                        `
+                });
+
+                Vue.component('Counter', {
+                    /*props:{
+                        count: Number
+                    },*/
+                    model:{
+                        maxCount:99,
+                        count:0
+                    },
+                    data:function(){
+                        return {
+                            count:0,
+                            maxCount:99
+                        }
+                    },
+                    methods:{
+                        changeVal:function(val){
+                            this.count += +val;
+                            this.validateVal();
+                            this.$emit('count-changed', this.count);
+                        },
+                        inputVal:function(ev){
+                            this.count = ev.target.value.replace(/\D/g,'');
+                            this.validateVal();
+                            this.$emit('count-changed', this.count);
+                        },
+                        validateVal:function(){
+                            this.count = +this.count;
+                            if(this.count < 0 )
+                                this.count = 0 ;
+                            else if(this.count>this.maxCount){
+                                this.count = +this.maxCount;
+                                this.$emit("overcount");
+                            }
+                        }
+                    },
+                    template:   
+                        `<div class='counter' :count="count">
+                            <div
+                                class='counterBtn' 
+                                @click="changeVal(-1)"
+                            >&minus;</div>
+
+                            <input class='counterInp' 
+                            @input="inputVal"
+                            :value="count" 
+                            >
+                            <div 
+                                class='counterBtn' 
+                                @click="changeVal(1)"
+                            >+</div>
+                        </div>`
+                });
+
+                let mainData = {
+                    cartcontents:[
+                        {
+                            name:"Pioneer",
+                            pic:"pics/mixer.png",
+                            cost:2400,
+                            count:0
+
+                        },
+                        {
+                            name:"Sun",
+                            pic:"pics/sun.png",
+                            cost:1800,
+                            count:0
+                            
+                        },
+                        {
+                            name:"Leaf",
+                            pic:"pics/leaf.png",
+                            cost:299,
+                            count:0
+                        },
+                        {
+                            name:"Автокресло  Britax Romer",
+                            pic:"pics/Brintax.png",
+                            cost:1999,
+                            count:0
+                        },
+                        {
+                            name:"Конструктор LEGO City Great Vehicle 60179 Вертолет скорой помощи",
+                            pic:"pics/LEGO.png",
+                            cost:1500,
+                            count:0
+                        }
+                    ]
+                };
+                var cartTT = new Vue({
+                    el: '#cartTT',
+                    data:mainData,
+                });
+            </script>
+
+    </body>
+</html>
